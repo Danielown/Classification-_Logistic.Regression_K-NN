@@ -1,16 +1,48 @@
 ---
-title: "Classification C1"
-author: "Daniel"
-date: "4/25/2021"
-output: html_document
+title: " Wine Class Classification "
+output: 
+  html_document:
+   theme: united
+   highlight: tango
+   toc: true
+   toc_float:
+      collapsed: false
+      smooth_scroll: false
 ---
 
-1. Librari and Setup
+<html>
+<style>
+body {background-color:rgb(0,0,0);}
+h1   {color: rgb(0, 255, 255);}
+h2    {color:rgb(0, 255, 255);}
+p     {color : white;
+       font-size: 20px;}
+author{color : white;
+       font-size: 40px;}
+</style>
+</html>
+
+
+
+<p>Daniel Lumban Gaol
+</p>
+24/04/2021
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE,
+                      mmessage = FALSE,
+                      warning = FALSE,
+                      fig.align = 'center',
+                      comment = '#>')
+options(scipen = 999)
+```
+
+
+# 1. Librari and Setup
 
 Pada metode klasifikasi menggunakan Regresi Logistik dan K-NN ini, sebelumnya Anda harus melakukan install.package() pada package readr, tidyverse, MASS, gtools, gmodels, class, caret, ggplot2 pada R Studio Anda. Apabila telah ter-install, maka lakukan pengaktifan package menggunakan library().
 
 ```{r message=FALSE}
-
 library(gtools)
 library(GGally)
 library(gmodels)
@@ -20,41 +52,69 @@ library(dplyr)
 library(rsample)
 ```
 
-2. Tujuan
+# 2. Tujuan
 Tujuan dari memprediksi data wine ini dari sifat fisiokimianya apakah yang membuat wine menjadi good atau not good berdasarkan qualitynya. 
 
 
-3. Logistic Regression
+# 3. Logistic Regression
 
-3.1 Import Data
+## 3.1 Import Data
 ```{r}
 wine <- read.csv("winequality-red.csv")
 head(wine)
 ```
 
-Informasi data :
+<html>
+<body>
 
+<p>
+<b>
+Informasi Data :
+</b>
+</p>
+<p>
 fixed.acidity         : Sebagian besar asam yang terlibat dengan anggur 
+</p>
+<p>
 volatile.acidity      : jumlah asam asetat dalam anggur
+</p>
+<p>
 citric.acid           : asam sitrat 
+</p>
+<p>
 residual.sugar        : jumlah gula yang tersisa setelah fermentasi dihentikan
+</p>
+<p>
 chlorides             : jumlah garam dalam anggur 
+</p>
+<p>
 free.sulfur.dioxide   : sebagai gas terlarut 
+</p>
+<p>
 total.sulfur.dioxide  : jumlah formulir SO2 yang bebas dan terikat
+</p>
+<p>
 density               : kepadatan air mendekati air tergantung pada persen kandungan alkohol dan gula
-pH                    : menjelaskan seberapa asam atau basa anggur dalam skala dari 0 (sangat asam) hingga 14                            (sangat basa)
+</p>
+<p>
+pH                    : menjelaskan seberapa asam atau basa anggur dalam skala dari 0 (sangat asam) hingga 14                                          (sangat basa)
+</p>
+<p>
 sulphates             : aditif anggur yang dapat berkontribusi pada tingkat gas sulfur dioksida (S02)
+</p>
+<p>
 alcohol               : Kadar Alkohol
+</p>
 
+</html>
+</body>
 
-
-
-3.2 Data Manipulation
+## 3.2 Data Manipulation
 
 pada kolom quality terdapat tingkat quality wine yang dibuat oleh si pembuat data, bahwa dimana 6 > Good, 6 < Not Good, maka kita buat kolom baru
 
 ```{r message=FALSE}
-wine$class <- ifelse(wine$quality <= 5 , "Not Good" , "Good")
+wine$class <- ifelse(wine$quality <= 5 , "NotGood" , "Good")
 ```
 
 Melakukan cek tipe data
@@ -79,7 +139,7 @@ Melakukan Pengecekan terhadap missing value
 colSums(is.na(wine_clean))
 ```
 
-3.3 Exploratory Data Analysis
+## 3.3 Exploratory Data Analysis
 
 
 
@@ -90,6 +150,8 @@ Asumsi :
 ```{r message=FALSE}
 RNGkind(sample.kind = "Rounding")
 set.seed(105)
+
+
 intrain <- initial_split(data = wine_clean, prop = 0.8, strata = class)
 wine.train <- training(intrain)
 wine.test <- training(intrain)
@@ -101,7 +163,7 @@ Proporsi data menggunakan 0.8/0.2
 prop.table(table(wine.train$class))
 prop.table(table(wine.test$class))
 ```
-Membuat data menjadi balance:
+Membuat data menjadi balance dengan teknik upSample :
 ```{r}
 wine.up <- upSample(x = wine.train %>% select(-class),
                     y = wine.test$class,
@@ -121,22 +183,25 @@ summary(model.wine)
 ```
 Dari hasil diatas, prediktor yang memiliki korelasi kuat dengan target variabel (class) adalah
 volatile.acidity, citric.acid, chlorides, free.sulfur.dioxide, total.sulfur.dioxide, sulphates dan alcohol. 
-tetapi kita akan mencoba model fitting dengan menggunakan metode stepwise
+Tetapi kita akan mencoba model fitting dengan menggunakan metode stepwise
 
 ```{r}
-model.wine2 <- step(model.wine, direction = "backward")
+model.wine2 <- step(model.wine, direction = "both")
 ```
 ```{r}
 summary(model.wine2)
 ```
 Mencoba untuk menginterpretasikan salah satu prediktor numerik yaitu alcohol :
 
-```{r}
-#alchohol
-inv.logit(-0.905412)
-```
-* Semakin tinggi kadar alcohol yang ada di wine akan memiliki peluang 0.28 untuk wine tersebut Not Good
 
+```{r}
+#alcohol
+inv.logit(-0.775480)
+```
+Semakin tinggi kadar alcohol yang ada di quality wine, akan memiliki peluang 0.31/31% untuk wine tersebut NotGood
+
+
+Klasifikasikan data wine.test berdasarkan `prediksi` dan simpan pada kolom baru bernama `prediksi`.
 
 Prediksi:
 ```{r}
@@ -148,48 +213,50 @@ wine.test$prediksi <- predict(object = model.wine2,
 ```
 
 
-> Klasifikasikan data loans.test berdasarkan `prediksi` dan simpan pada kolom baru bernama `prediksi.class`.
 
+Cek persebaran data
 ```{r}
 plot.wine <- density(wine.test$prediksi)
 plot(plot.wine, main = "Density Wine Prediksi")
 polygon(plot.wine, col="blue", border="black")
 ```
 
-Dari density plot diatas data prediksi tidak berbentuk simetris, atau dapat dikatakan tidak terdistribusi normal
+Dari density plot diatas data prediksi tidak berbentuk simetris, atau dapat dikatakan tidak terdistribusi normal, dan hasil prediksi lebih condong ke angka 1 atau "NotGood"
 
 
 Hasil Prediksi
 
 ```{r}
-wine.test$pred.label <- ifelse(wine.test$prediksi < 0.5, "Not Good" , "Good" )
+wine.test$pred.label <- ifelse(wine.test$prediksi < 0.5, "NotGood" , "Good" )
 
 wine.test$pred.label <- as.factor(wine.test$pred.label)
 str(wine.test)
 ```
 Melihat hasil prediksi
+
 ```{r}
 wine.test %>% 
-  select(class,prediksi,pred.label)
+  select(class,prediksi,pred.label) %>% 
+  head()
 ```
 
 ```{r}
-wine.conf <- confusionMatrix(wine.test$pred.label, wine.test$class, positive = "Not Good")
+wine.conf <- confusionMatrix(wine.test$pred.label, wine.test$class, positive = "NotGood")
 wine.conf
 ```
 4 metrics performa model: Accuracy, Sensitivity/Recall, Precision/Pos pred Value, Specificity
 
-Dari hasil prediksi diatas model yang dihasilkan hanya mendapatkan accuracy 24%, dibalik tingkat akurasi tersebut jika menjawab dari business question dimana memfokuskan terhadap quality dari wine tersebut. Maka bisa memainkan tingkat dari thresholdnya/ambang batasnya, dimana kita bisa menaikan threshold dari 0.5 menjadi 0.8, untuk mendapatkan Sensitivity atau recall yang tinggi untuk mendapatkan quality yang baik. 
+Dari hasil prediksi diatas model yang dihasilkan hanya mendapatkan accuracy 25%, dibalik tingkat akurasi tersebut jika menjawab dari business question dimana memfokuskan terhadap quality dari wine tersebut. Maka bisa memainkan tingkat dari threshold/ambang batasnya, dimana kita bisa menaikan threshold dari 0.5 menjadi 0.8, untuk mendapatkan Sensitivity atau recall yang tinggi untuk mendapatkan quality yang baik dan memperkecil NotGood. 
 
 
 
-> KNN
 
-4. K-Nearest Neighbour
+
+# 4. K-Nearest Neighbour
 
 Untuk menjawab kelanjutan dari model sebelumnya, dimana tingkat accuracy masih rendah, pada tahap ini akan digunakan model K-NN untuk mengetahui apakah dengan model ini tingkat accuracy akan menjadi lebih baik terhadap quality wine tersebut
 
-4.1 Mengubah type data numeric menjadi scale
+## 4.1 Cross Validation
 
 
 ```{r}
@@ -205,6 +272,7 @@ Membuat data training dan data testing dari data wine.scale
 ```{r}
 RNGkind(sample.kind = "Rounding")
 set.seed(105)
+
 init <- initial_split(wine.up, prop = 0.8, strara = "class")
 ws.train <- training(init)
 ws.test <- testing(init)
@@ -218,7 +286,9 @@ check class balance
 prop.table(table(ws.train$class))
 prop.table(table(ws.test$class))
 ```
-Untuk k-NN, dipisahkan antara prediktor dan label (target variabelnya).
+## 4.2 Data Training
+
+Pada model k-NN, dipisahkan antara prediktor dan label (target variabelnya).
 
 ```{r}
 #Prediktor
@@ -250,7 +320,7 @@ ws.test.xs <- ws.test.x %>%
 
 
 
-> Predict
+## 4.3
 
 mencari K yang optimum
 
@@ -264,24 +334,26 @@ wine.prediksi <- knn(train = ws.train.xs,
                      k = 33)
 head(wine.prediksi)
 ```
-                       
+
 
 ```{r}
 confusionMatrix(data = wine.prediksi,
                 reference = as.factor(ws.test.y$class),
-                positive = "Not Good")
+                positive = "NotGood")
 ```
 
+Berdasarkan hasil dari confusion matrix diatas, model yang dibuat untuk memprediksi (accuracy) wine Good/NotGood sebesar 77%.
+Berdasarkan data aktual dari NotGood model dapat menebak dengan tepat sebesar 77%, sedangkan dengan data aktual dari Good 
+model berhasil memprediksi dengan benar sebesar 76%
+
+
+# 5. Kesimpulan
+
+Berdasarkan hasil prediksi yang diperoleh dari logistic regression dan K-NN, dapat disimpulkan bahwa dalam case ini kedua model tidak memiliki kemampuan yang sama dalam melakukan prediksi. Hal ini dikarenakan kedua model memiliki accuracy, sensitivity, specifivity dan pos pred value yang berbeda jauh, sehingga pada case ini model dengan K-NN adalah model yang lebih tepat dalam melakukan prediksi dengan accuracy 77%
 
 
 
 
-
-
-
-
-
-> Model Evaluation Logistic Regression & K-NN
 
 
 
